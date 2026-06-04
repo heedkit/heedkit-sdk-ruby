@@ -44,6 +44,12 @@ class FeatureKitTest < Minitest::Test
     end
   end
 
+  def test_wraps_transport_errors
+    # Nothing is listening on port 1 — the Errno is wrapped as FeatureKit::Error.
+    client = FeatureKit::Client.new(project_key: "fk_x", endpoint: "http://127.0.0.1:1", timeout: 1)
+    assert_raises(FeatureKit::Error) { client.roadmap }
+  end
+
   def test_global_configuration
     FeatureKit.configure do |c|
       c.project_key = "fk_global"

@@ -101,6 +101,10 @@ module FeatureKit
       res.body.to_s.empty? ? {} : JSON.parse(res.body)
     rescue JSON::ParserError => e
       raise Error, "Invalid JSON from FeatureKit API: #{e.message}"
+    rescue SocketError, SystemCallError, IOError, Timeout::Error => e
+      # Wrap transport failures (connection refused, DNS, timeouts) in our own error
+      # type so callers only need to rescue FeatureKit::Error.
+      raise Error, "FeatureKit request to #{uri} failed: #{e.message}"
     end
   end
 end
