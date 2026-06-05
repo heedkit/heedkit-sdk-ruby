@@ -26,6 +26,11 @@ module FeatureKit
       Roadmap.from_payload(get("/public/projects/#{project_key}/roadmap"))
     end
 
+    # GET the public changelog. Returns a FeatureKit::Changelog.
+    def changelog
+      Changelog.from_payload(get("/public/projects/#{project_key}/changelog"))
+    end
+
     # POST /sdk/init — identify (find-or-create) an end-user. Returns the parsed body
     # ({ "end_user_id" => ..., "project" => {...} }).
     def identify(external_id: nil, email: nil, name: nil, avatar_url: nil, platform: nil)

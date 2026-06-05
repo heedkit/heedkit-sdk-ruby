@@ -23,6 +23,35 @@ class FeatureKitTest < Minitest::Test
     assert_equal 3, item.vote_count
   end
 
+  def test_changelog_from_payload
+    payload = {
+      "project_name" => "Acme",
+      "theme" => { "primary" => "#123456" },
+      "entries" => [
+        { "id" => 2, "title" => "Dark mode", "body" => "**ship**", "category" => "new",
+          "published_at" => "2026-06-01T00:00:00Z" }
+      ]
+    }
+    changelog = FeatureKit::Changelog.from_payload(payload)
+
+    assert_equal "Acme", changelog.project_name
+    assert_equal "#123456", changelog.primary_color
+    assert_equal 1, changelog.size
+    entry = changelog.first
+    assert_equal "Dark mode", entry.title
+    assert_equal "New", entry.category_label
+    assert_instance_of Time, entry.published_at
+  end
+
+  def test_changelog_over_http
+    body = '{"project_name":"Demo","theme":{},"entries":[{"id":9,"title":"Done","body":"x","category":"fixed","published_at":"2026-05-01T00:00:00Z"}]}'
+    with_stub_server(body: body) do |endpoint|
+      changelog = FeatureKit::Client.new(project_key: "fk_test", endpoint: endpoint).changelog
+      assert_equal "Demo", changelog.project_name
+      assert_equal "Fixed", changelog.first.category_label
+    end
+  end
+
   def test_client_requires_key_and_endpoint
     assert_raises(ArgumentError) { FeatureKit::Client.new(project_key: "", endpoint: "http://x") }
     assert_raises(ArgumentError) { FeatureKit::Client.new(project_key: "k", endpoint: "") }

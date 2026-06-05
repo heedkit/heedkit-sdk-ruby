@@ -2,6 +2,7 @@
 
 require "featurekit/version"
 require "featurekit/roadmap"
+require "featurekit/changelog"
 require "featurekit/client"
 
 # Ruby / Rails SDK for FeatureKit — fetch a project's public roadmap and drive the
@@ -42,6 +43,10 @@ module FeatureKit
 
     def roadmap
       client.roadmap
+    end
+
+    def changelog
+      client.changelog
     end
   end
 end
