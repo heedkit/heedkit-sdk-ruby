@@ -4,8 +4,8 @@ require "net/http"
 require "json"
 require "uri"
 
-module FeatureKit
-  # Server-side client for the FeatureKit API. Talks to the public roadmap endpoint
+module HeedKit
+  # Server-side client for the HeedKit API. Talks to the public roadmap endpoint
   # and the end-user SDK endpoints (X-Project-Key auth).
   class Client
     DEFAULT_TIMEOUT = 5
@@ -21,12 +21,12 @@ module FeatureKit
       @timeout = timeout
     end
 
-    # GET the public roadmap. Returns a FeatureKit::Roadmap.
+    # GET the public roadmap. Returns a HeedKit::Roadmap.
     def roadmap
       Roadmap.from_payload(get("/public/projects/#{project_key}/roadmap"))
     end
 
-    # GET the public changelog. Returns a FeatureKit::Changelog.
+    # GET the public changelog. Returns a HeedKit::Changelog.
     def changelog
       Changelog.from_payload(get("/public/projects/#{project_key}/changelog"))
     end
@@ -100,16 +100,16 @@ module FeatureKit
 
       res = http.request(req)
       unless res.code.to_i.between?(200, 299)
-        raise Error, "FeatureKit API #{res.code} for #{uri.path}: #{res.body}"
+        raise Error, "HeedKit API #{res.code} for #{uri.path}: #{res.body}"
       end
 
       res.body.to_s.empty? ? {} : JSON.parse(res.body)
     rescue JSON::ParserError => e
-      raise Error, "Invalid JSON from FeatureKit API: #{e.message}"
+      raise Error, "Invalid JSON from HeedKit API: #{e.message}"
     rescue SocketError, SystemCallError, IOError, Timeout::Error => e
       # Wrap transport failures (connection refused, DNS, timeouts) in our own error
-      # type so callers only need to rescue FeatureKit::Error.
-      raise Error, "FeatureKit request to #{uri} failed: #{e.message}"
+      # type so callers only need to rescue HeedKit::Error.
+      raise Error, "HeedKit request to #{uri} failed: #{e.message}"
     end
   end
 end

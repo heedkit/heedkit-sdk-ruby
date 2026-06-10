@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# FeatureKit Ruby SDK — runnable demo against the Rails /sdk backend.
+# HeedKit Ruby SDK — runnable demo against the Rails /sdk backend.
 #
 # Walks the full end-user feedback flow using ONLY methods that exist on
-# FeatureKit::Client (see ../lib/featurekit/client.rb):
+# HeedKit::Client (see ../lib/heedkit/client.rb):
 #
 #   identify  -> POST /sdk/init
 #   features  -> GET  /sdk/features
@@ -17,17 +17,17 @@
 # Run:  bundle install && bundle exec ruby demo.rb
 # (see README.md for prerequisites)
 
-require "featurekit"
+require "heedkit"
 
 # ---------------------------------------------------------------------------
 # CONFIG — override via env vars; defaults target the local Rails dev server.
 # ---------------------------------------------------------------------------
 # This is a non-browser (native) client, so use 127.0.0.1 per the dev-host
-# notes. Browser SDKs would use http://featurekit.localhost:3000 instead.
-ENDPOINT    = ENV.fetch("FEATUREKIT_ENDPOINT", "http://127.0.0.1:3000")
+# notes. Browser SDKs would use http://heedkit.localhost:3000 instead.
+ENDPOINT    = ENV.fetch("HEEDKIT_ENDPOINT", "http://127.0.0.1:3000")
 # Get a real key from the Rails console Install page or db/seeds (the seeded
-# "featurekit"/"demo" workspace). Never commit a real key.
-PROJECT_KEY = ENV.fetch("FEATUREKIT_PROJECT_KEY", "pk_REPLACE_ME")
+# "heedkit"/"demo" workspace). Never commit a real key.
+PROJECT_KEY = ENV.fetch("HEEDKIT_PROJECT_KEY", "pk_REPLACE_ME")
 
 def section(title)
   puts
@@ -35,12 +35,12 @@ def section(title)
 end
 
 # Build a client straight from the constructor. (You could equally use
-# FeatureKit.configure { |c| ... } + FeatureKit.client — same Client object.)
-client = FeatureKit::Client.new(project_key: PROJECT_KEY, endpoint: ENDPOINT)
+# HeedKit.configure { |c| ... } + HeedKit.client — same Client object.)
+client = HeedKit::Client.new(project_key: PROJECT_KEY, endpoint: ENDPOINT)
 
-puts "FeatureKit demo -> #{ENDPOINT}"
+puts "HeedKit demo -> #{ENDPOINT}"
 if PROJECT_KEY == "pk_REPLACE_ME"
-  puts "WARNING: using placeholder project key. Set FEATUREKIT_PROJECT_KEY to a real key."
+  puts "WARNING: using placeholder project key. Set HEEDKIT_PROJECT_KEY to a real key."
 end
 
 begin
@@ -121,10 +121,10 @@ begin
 
   section "Done"
   puts "Full flow completed against #{ENDPOINT}."
-rescue FeatureKit::Error => e
-  # All SDK methods wrap transport + non-2xx responses in FeatureKit::Error.
+rescue HeedKit::Error => e
+  # All SDK methods wrap transport + non-2xx responses in HeedKit::Error.
   warn
-  warn "FeatureKit error: #{e.message}"
-  warn "Is the Rails server running (cd featurekit-rails && bin/dev) and is FEATUREKIT_PROJECT_KEY a valid key?"
+  warn "HeedKit error: #{e.message}"
+  warn "Is the Rails server running (cd heedkit-rails && bin/dev) and is HEEDKIT_PROJECT_KEY a valid key?"
   exit 1
 end

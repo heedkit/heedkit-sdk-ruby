@@ -1,28 +1,28 @@
 # frozen_string_literal: true
 
-require "featurekit/version"
-require "featurekit/roadmap"
-require "featurekit/changelog"
-require "featurekit/client"
+require "heedkit/version"
+require "heedkit/roadmap"
+require "heedkit/changelog"
+require "heedkit/client"
 
-# Ruby / Rails SDK for FeatureKit — fetch a project's public roadmap and drive the
+# Ruby / Rails SDK for HeedKit — fetch a project's public roadmap and drive the
 # end-user feedback API (identify / list / submit / vote / comment) from your server.
 #
-#   FeatureKit.configure do |c|
+#   HeedKit.configure do |c|
 #     c.project_key = "fk_..."
-#     c.endpoint    = "https://acme.featurekit.app"   # your FeatureKit base URL
+#     c.endpoint    = "https://acme.heedkit.com"   # your HeedKit base URL
 #   end
 #
-#   FeatureKit.roadmap            # => FeatureKit::Roadmap
-#   FeatureKit.client.identify(external_id: "u-1")
-module FeatureKit
+#   HeedKit.roadmap            # => HeedKit::Roadmap
+#   HeedKit.client.identify(external_id: "u-1")
+module HeedKit
   class Error < StandardError; end
 
   class Configuration
     attr_accessor :project_key, :endpoint, :timeout
 
     def initialize
-      @endpoint = "https://api.featurekit.dev"
+      @endpoint = "https://api.heedkit.com"
       @timeout = 5
     end
   end
@@ -51,4 +51,4 @@ module FeatureKit
   end
 end
 
-require "featurekit/railtie" if defined?(::Rails::Railtie)
+require "heedkit/railtie" if defined?(::Rails::Railtie)
