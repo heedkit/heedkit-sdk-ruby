@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module FeatureKit
+module HeedKit
   # A single roadmap item.
   RoadmapItem = Struct.new(:id, :title, :description, :vote_count, :tag, keyword_init: true)
 

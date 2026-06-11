@@ -2,14 +2,14 @@
 
 require "test_helper"
 
-class FeatureKitTest < Minitest::Test
+class HeedKitTest < Minitest::Test
   def test_roadmap_from_payload
     payload = {
       "project_name" => "Acme",
       "theme" => { "primary" => "#123456" },
       "columns" => { "planned" => [ { "id" => 1, "title" => "Dark mode", "vote_count" => 3, "tag" => "ui" } ] }
     }
-    roadmap = FeatureKit::Roadmap.from_payload(payload)
+    roadmap = HeedKit::Roadmap.from_payload(payload)
 
     assert_equal "Acme", roadmap.project_name
     assert_equal "#123456", roadmap.primary_color
@@ -32,7 +32,7 @@ class FeatureKitTest < Minitest::Test
           "published_at" => "2026-06-01T00:00:00Z" }
       ]
     }
-    changelog = FeatureKit::Changelog.from_payload(payload)
+    changelog = HeedKit::Changelog.from_payload(payload)
 
     assert_equal "Acme", changelog.project_name
     assert_equal "#123456", changelog.primary_color
@@ -46,21 +46,21 @@ class FeatureKitTest < Minitest::Test
   def test_changelog_over_http
     body = '{"project_name":"Demo","theme":{},"entries":[{"id":9,"title":"Done","body":"x","category":"fixed","published_at":"2026-05-01T00:00:00Z"}]}'
     with_stub_server(body: body) do |endpoint|
-      changelog = FeatureKit::Client.new(project_key: "fk_test", endpoint: endpoint).changelog
+      changelog = HeedKit::Client.new(project_key: "fk_test", endpoint: endpoint).changelog
       assert_equal "Demo", changelog.project_name
       assert_equal "Fixed", changelog.first.category_label
     end
   end
 
   def test_client_requires_key_and_endpoint
-    assert_raises(ArgumentError) { FeatureKit::Client.new(project_key: "", endpoint: "http://x") }
-    assert_raises(ArgumentError) { FeatureKit::Client.new(project_key: "k", endpoint: "") }
+    assert_raises(ArgumentError) { HeedKit::Client.new(project_key: "", endpoint: "http://x") }
+    assert_raises(ArgumentError) { HeedKit::Client.new(project_key: "k", endpoint: "") }
   end
 
   def test_roadmap_over_http
     body = '{"project_name":"Demo","theme":{},"columns":{"shipped":[{"id":9,"title":"Done","vote_count":5}]}}'
     with_stub_server(body: body) do |endpoint|
-      roadmap = FeatureKit::Client.new(project_key: "fk_test", endpoint: endpoint).roadmap
+      roadmap = HeedKit::Client.new(project_key: "fk_test", endpoint: endpoint).roadmap
       assert_equal "Demo", roadmap.project_name
       assert_equal "Done", roadmap.columns["shipped"].first.title
     end
@@ -68,23 +68,23 @@ class FeatureKitTest < Minitest::Test
 
   def test_raises_on_error_status
     with_stub_server(status: "401 Unauthorized", body: '{"error":"invalid_project_key"}') do |endpoint|
-      client = FeatureKit::Client.new(project_key: "fk_bad", endpoint: endpoint)
-      assert_raises(FeatureKit::Error) { client.identify(external_id: "u-1") }
+      client = HeedKit::Client.new(project_key: "fk_bad", endpoint: endpoint)
+      assert_raises(HeedKit::Error) { client.identify(external_id: "u-1") }
     end
   end
 
   def test_wraps_transport_errors
-    # Nothing is listening on port 1 — the Errno is wrapped as FeatureKit::Error.
-    client = FeatureKit::Client.new(project_key: "fk_x", endpoint: "http://127.0.0.1:1", timeout: 1)
-    assert_raises(FeatureKit::Error) { client.roadmap }
+    # Nothing is listening on port 1 — the Errno is wrapped as HeedKit::Error.
+    client = HeedKit::Client.new(project_key: "fk_x", endpoint: "http://127.0.0.1:1", timeout: 1)
+    assert_raises(HeedKit::Error) { client.roadmap }
   end
 
   def test_global_configuration
-    FeatureKit.configure do |c|
+    HeedKit.configure do |c|
       c.project_key = "fk_global"
       c.endpoint = "https://example.test"
     end
-    assert_equal "fk_global", FeatureKit.client.project_key
-    assert_equal "https://example.test", FeatureKit.client.endpoint
+    assert_equal "fk_global", HeedKit.client.project_key
+    assert_equal "https://example.test", HeedKit.client.endpoint
   end
 end

@@ -1,7 +1,7 @@
-# FeatureKit Ruby SDK — Example
+# HeedKit Ruby SDK — Example
 
-A runnable, server-side demo that drives the full FeatureKit flow against the
-**Rails `/sdk` backend** using `FeatureKit::Client` from this repo (depended on
+A runnable, server-side demo that drives the full HeedKit flow against the
+**Rails `/sdk` backend** using `HeedKit::Client` from this repo (depended on
 locally via `path: ".."`, not the published gem).
 
 It walks through:
@@ -17,15 +17,15 @@ It walks through:
 ## Prerequisites
 
 - Ruby >= 3.1 and Bundler.
-- The FeatureKit Rails app running locally:
+- The HeedKit Rails app running locally:
 
   ```sh
-  cd featurekit-rails
+  cd heedkit-rails
   bin/dev            # serves on port 3000
   ```
 
 - A **project key** (public key, `pk_...`). Get one from the Rails console
-  Install page, or from `db/seeds` (the seeded `featurekit` / `demo` workspace).
+  Install page, or from `db/seeds` (the seeded `heedkit` / `demo` workspace).
   Never hardcode a real key into source.
 
 ## Run
@@ -34,14 +34,14 @@ From this `Example/` directory:
 
 ```sh
 bundle install
-FEATUREKIT_PROJECT_KEY=pk_your_real_key bundle exec ruby demo.rb
+HEEDKIT_PROJECT_KEY=pk_your_real_key bundle exec ruby demo.rb
 ```
 
-`FEATUREKIT_ENDPOINT` is optional and defaults to `http://127.0.0.1:3000`.
+`HEEDKIT_ENDPOINT` is optional and defaults to `http://127.0.0.1:3000`.
 
 ```sh
-FEATUREKIT_PROJECT_KEY=pk_... \
-FEATUREKIT_ENDPOINT=http://127.0.0.1:3000 \
+HEEDKIT_PROJECT_KEY=pk_... \
+HEEDKIT_ENDPOINT=http://127.0.0.1:3000 \
 bundle exec ruby demo.rb
 ```
 
@@ -53,7 +53,7 @@ it for you. Pick the endpoint host for your environment:
 | Environment                    | Endpoint                          |
 | ------------------------------ | --------------------------------- |
 | Non-browser / native (this CLI)| `http://127.0.0.1:3000`           |
-| Browser code                   | `http://featurekit.localhost:3000`|
+| Browser code                   | `http://heedkit.localhost:3000`|
 | Android emulator               | `http://10.0.2.2:3000`            |
 | iOS simulator                  | `http://localhost:3000`           |
 
@@ -62,8 +62,8 @@ This demo is a plain Ruby process (non-browser), so it defaults to
 
 ## How it maps to the SDK
 
-Every step uses a real method on `FeatureKit::Client`
-(see `../lib/featurekit/client.rb`):
+Every step uses a real method on `HeedKit::Client`
+(see `../lib/heedkit/client.rb`):
 
 | Step      | SDK method                                  | Rails endpoint                     |
 | --------- | ------------------------------------------- | ---------------------------------- |
@@ -75,5 +75,5 @@ Every step uses a real method on `FeatureKit::Client`
 | vote      | `client.vote(id, end_user_id:)`             | `POST /sdk/features/:id/vote`      |
 | comment   | `client.comment(id, end_user_id:, body:)`   | `POST /sdk/features/:id/comments`  |
 
-All methods raise `FeatureKit::Error` on a non-2xx response or transport
+All methods raise `HeedKit::Error` on a non-2xx response or transport
 failure; the demo rescues it and prints a hint.

@@ -2,7 +2,7 @@
 
 require "time"
 
-module FeatureKit
+module HeedKit
   # A single published changelog entry (release note). `body` is markdown; `published_at`
   # is a Time (or nil).
   ChangelogEntry = Struct.new(

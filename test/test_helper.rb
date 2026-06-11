@@ -4,7 +4,7 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 
 require "minitest/autorun"
 require "socket"
-require "featurekit"
+require "heedkit"
 
 # Minimal one-shot HTTP server for exercising the client without WebMock.
 def with_stub_server(status: "200 OK", body: "{}")

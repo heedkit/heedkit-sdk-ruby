@@ -3,4 +3,4 @@
 source "https://rubygems.org"
 
 # Depend on the local SDK in this repo (one directory up), NOT the published gem.
-gem "featurekit", path: ".."
+gem "heedkit", path: ".."
