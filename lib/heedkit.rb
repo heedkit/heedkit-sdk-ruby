@@ -10,7 +10,7 @@ require "heedkit/client"
 #
 #   HeedKit.configure do |c|
 #     c.project_key = "fk_..."
-#     c.endpoint    = "https://acme.heedkit.com"   # your HeedKit base URL
+#     c.endpoint    = "https://heedkit.com"        # your HeedKit ORIGIN (no /sdk suffix)
 #   end
 #
 #   HeedKit.roadmap            # => HeedKit::Roadmap

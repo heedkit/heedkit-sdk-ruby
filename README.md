@@ -13,7 +13,7 @@ gem "heedkit"
 ```ruby
 HeedKit.configure do |c|
   c.project_key = ENV["HEEDKIT_PROJECT_KEY"]   # "fk_..."
-  c.endpoint    = "https://acme.heedkit.com"   # your HeedKit base URL
+  c.endpoint    = "https://heedkit.com"         # your HeedKit base URL
   c.secret_key  = ENV["HEEDKIT_SERVER_SECRET"] # "fk_secret_..." — lets identify() sign users
 end
 ```
