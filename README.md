@@ -14,6 +14,7 @@ gem "heedkit"
 HeedKit.configure do |c|
   c.project_key = ENV["HEEDKIT_PROJECT_KEY"]   # "fk_..."
   c.endpoint    = "https://acme.heedkit.com"   # your HeedKit base URL
+  c.secret_key  = ENV["HEEDKIT_SERVER_SECRET"] # "fk_secret_..." — lets identify() sign users
 end
 ```
 
@@ -41,11 +42,30 @@ and views:
 
 ```ruby
 fk = HeedKit.client
+# With secret_key configured, identify() signs the external_id automatically
+# (the API rejects unsigned ids with 401 invalid_user_signature).
 user = fk.identify(external_id: "user-123", email: "ada@example.com")
-fk.submit(end_user_id: user["end_user_id"], title: "Dark mode", kind: "feature_request")
-fk.features(end_user_id: user["end_user_id"], sort: "top")
-fk.vote(feature_id, end_user_id: user["end_user_id"])
-fk.comment(feature_id, end_user_id: user["end_user_id"], body: "Yes please")
+identity = user["identity"] # signed replay token — pass it to the calls below
+
+fk.submit(identity:, title: "Dark mode", kind: "feature_request")
+fk.features(identity:, sort: "top")      # identity optional here (anonymous list works)
+fk.vote(feature_id, identity:)
+fk.comment(feature_id, identity:, body: "Yes please")
+```
+
+The client is stateless — one instance can serve many end-users; each call carries the
+`identity` token of the user it acts for (`X-HeedKit-Identity` header).
+
+Serving a browser widget? Expose the signed payload from an authenticated route and pass
+it to the JS SDK:
+
+```ruby
+# GET /heedkit/identity (authenticated)
+render json: {
+  externalId: current_user.id.to_s,
+  userHash: HeedKit.client.user_hash_for(current_user.id),
+  name: current_user.name, email: current_user.email
+}
 ```
 
 `identify` / `submit` / `features` / `vote` / `comment` authenticate with the project key
