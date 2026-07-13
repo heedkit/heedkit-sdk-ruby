@@ -3,22 +3,40 @@
 require "net/http"
 require "json"
 require "uri"
+require "openssl"
 
 module HeedKit
   # Server-side client for the HeedKit API. Talks to the public roadmap endpoint
   # and the end-user SDK endpoints (X-Project-Key auth).
+  #
+  # Identity: this SDK runs where the project SECRET may live, so it can sign
+  # identities itself — configure `secret_key` and #identify computes the required
+  # user_hash automatically (or expose #user_hash_for to your frontend widget).
+  # Authenticated calls (submit/vote/comment) take the `identity` token #identify
+  # returned; the client is stateless so one instance can serve many end-users.
   class Client
     DEFAULT_TIMEOUT = 5
 
     attr_reader :project_key, :endpoint
 
-    def initialize(project_key:, endpoint:, timeout: DEFAULT_TIMEOUT)
+    def initialize(project_key:, endpoint:, secret_key: nil, timeout: DEFAULT_TIMEOUT)
       raise ArgumentError, "project_key is required" if project_key.to_s.empty?
       raise ArgumentError, "endpoint is required" if endpoint.to_s.empty?
 
       @project_key = project_key
       @endpoint = endpoint.to_s.chomp("/")
+      @secret_key = secret_key
       @timeout = timeout
+    end
+
+    # HMAC_SHA256(secret_key, external_id) as lowercase hex — the signature /sdk/init
+    # requires alongside any external_id (unsigned ids are rejected with
+    # 401 invalid_user_signature). Also handy for building the identity payload a
+    # frontend widget fetches ({ externalId, userHash, name, email }).
+    def user_hash_for(external_id)
+      raise Error, "secret_key not configured — pass secret_key: to HeedKit::Client.new" if @secret_key.to_s.empty?
+
+      OpenSSL::HMAC.hexdigest("SHA256", @secret_key, external_id.to_s)
     end
 
     # GET the public roadmap. Returns a HeedKit::Roadmap.
@@ -32,44 +50,52 @@ module HeedKit
     end
 
     # POST /sdk/init — identify (find-or-create) an end-user. Returns the parsed body
-    # ({ "end_user_id" => ..., "project" => {...} }).
-    def identify(external_id: nil, email: nil, name: nil, avatar_url: nil, platform: nil)
-      sdk_post("/sdk/init", external_id:, email:, name:, avatar_url:, platform:)
+    # ({ "end_user_id" => ..., "identity" => "<replay token>", "project" => {...} });
+    # pass that "identity" to submit/vote/comment. With an external_id, user_hash is
+    # computed from the configured secret_key when not given explicitly.
+    def identify(external_id: nil, user_hash: nil, email: nil, name: nil, avatar_url: nil, platform: nil)
+      user_hash ||= user_hash_for(external_id) if external_id && !@secret_key.to_s.empty?
+      sdk_post("/sdk/init", external_id:, user_hash:, email:, name:, avatar_url:, platform:)
     end
 
-    # GET /sdk/features — public features plus the caller's own private submissions.
-    def features(end_user_id: nil, status: nil, kind: nil, sort: "top", cursor: nil)
-      query = { end_user_id:, status:, kind:, sort:, cursor: }.compact
-      sdk_get("/sdk/features", query)
+    # GET /sdk/features — public features, plus the caller's own private submissions
+    # when an identity token is given.
+    def features(identity: nil, status: nil, kind: nil, sort: "top", cursor: nil)
+      query = { status:, kind:, sort:, cursor: }.compact
+      sdk_get("/sdk/features", query, identity:)
     end
 
-    # POST /sdk/features — submit a feature on behalf of an end-user.
-    def submit(end_user_id:, title:, description: nil, kind: "feature_request", tag: nil)
-      sdk_post("/sdk/features", end_user_id:, title:, description:, kind:, tag:)
+    # POST /sdk/features — submit a feature as the end-user the token names.
+    def submit(identity:, title:, description: nil, kind: "feature_request", tag: nil)
+      sdk_post("/sdk/features", identity:, title:, description:, kind:, tag:)
     end
 
-    # POST /sdk/features/:id/vote — toggle a vote.
-    def vote(feature_id, end_user_id:)
-      sdk_post("/sdk/features/#{feature_id}/vote", end_user_id:)
+    # POST /sdk/features/:id/vote — toggle the end-user's vote.
+    def vote(feature_id, identity:)
+      sdk_post("/sdk/features/#{feature_id}/vote", identity:)
     end
 
-    # POST /sdk/features/:id/comments — comment as an end-user.
-    def comment(feature_id, end_user_id:, body:)
-      sdk_post("/sdk/features/#{feature_id}/comments", end_user_id:, body:)
+    # POST /sdk/features/:id/comments — comment as the end-user the token names.
+    def comment(feature_id, identity:, body:)
+      sdk_post("/sdk/features/#{feature_id}/comments", identity:, body:)
     end
 
     private
 
-    def sdk_get(path, query)
-      get(path, query:, headers: key_header)
+    def sdk_get(path, query, identity: nil)
+      get(path, query:, headers: key_header(identity))
     end
 
-    def sdk_post(path, **body)
-      post(path, body: body.compact, headers: key_header)
+    def sdk_post(path, identity: nil, **body)
+      post(path, body: body.compact, headers: key_header(identity))
     end
 
-    def key_header
-      { "X-Project-Key" => project_key }
+    # Project key + (when present) the signed identity replay token. The caller is
+    # identified by this header, never by body params.
+    def key_header(identity = nil)
+      h = { "X-Project-Key" => project_key }
+      h["X-HeedKit-Identity"] = identity if identity
+      h
     end
 
     def get(path, query: {}, headers: {})
