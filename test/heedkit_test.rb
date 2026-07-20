@@ -43,6 +43,27 @@ class HeedKitTest < Minitest::Test
     assert_instance_of Time, entry.published_at
   end
 
+  def test_changelog_suggested_by_is_additive_and_nil_safe
+    payload = {
+      "project_name" => "Acme",
+      "entries" => [
+        { "id" => 1, "suggested_by" => "Ada Lovelace" },
+        { "id" => 2 },
+        { "id" => 3, "suggested_by" => nil },
+        { "id" => 4, "suggested_by" => "" }
+      ]
+    }
+
+    entries = HeedKit::Changelog.from_payload(payload).entries
+
+    assert_equal "Ada Lovelace", entries[0].suggested_by
+    assert_predicate entries[0], :suggested?
+    entries.drop(1).each do |entry|
+      assert_nil entry.suggested_by
+      refute_predicate entry, :suggested?
+    end
+  end
+
   def test_changelog_over_http
     body = '{"project_name":"Demo","theme":{},"entries":[{"id":9,"title":"Done","body":"x","category":"fixed","published_at":"2026-05-01T00:00:00Z"}]}'
     with_stub_server(body: body) do |endpoint|

@@ -38,6 +38,18 @@ and views:
 <% end %>
 ```
 
+## Changelog
+
+```ruby
+HeedKit.changelog.each do |entry|
+  puts "#{entry.category_label}: #{entry.title}"
+  puts "💡 Suggested by #{entry.suggested_by}" if entry.suggested?
+end
+```
+
+`ChangelogEntry#suggested_by` is the requester's display name when one was provided,
+otherwise `nil`.
+
 ## Feedback API
 
 ```ruby

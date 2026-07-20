@@ -3,12 +3,13 @@
 require "time"
 
 module HeedKit
-  # A single published changelog entry (release note). `body` is markdown; `published_at`
-  # is a Time (or nil).
+  # A single published changelog entry (release note). `body` is markdown, `published_at`
+  # is a Time (or nil), and `suggested_by` is the requester's display name (or nil).
   ChangelogEntry = Struct.new(
-    :id, :title, :body, :category, :category_label, :published_at, keyword_init: true
+    :id, :title, :body, :category, :category_label, :published_at, :suggested_by, keyword_init: true
   ) do
     def date = published_at
+    def suggested? = !suggested_by.to_s.empty?
   end
 
   # A project's public changelog: published entries, newest first.
@@ -24,7 +25,7 @@ module HeedKit
         ChangelogEntry.new(
           id: e["id"], title: e["title"], body: e["body"], category: e["category"],
           category_label: e["category_label"] || CATEGORY_LABELS[e["category"]] || e["category"],
-          published_at: parse_time(e["published_at"])
+          published_at: parse_time(e["published_at"]), suggested_by: presence(e["suggested_by"])
         )
       end
       new(project_name: payload["project_name"], theme: payload["theme"] || {}, entries: entries)
@@ -35,6 +36,10 @@ module HeedKit
       Time.iso8601(value.to_s)
     rescue ArgumentError
       nil
+    end
+
+    def self.presence(value)
+      value unless value.to_s.strip.empty?
     end
 
     def initialize(project_name:, theme:, entries:)
