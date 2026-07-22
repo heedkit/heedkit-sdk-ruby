@@ -11,7 +11,7 @@ class ClientIdentityTest < Minitest::Test
   VECTOR = "4c630c032f4ff66a3e6379eca16cfc5fc40b231d6aeb1cd34c155efd3db54e7d"
 
   def client(endpoint, secret: SECRET)
-    HeedKit::Client.new(project_key: "fk_test", endpoint: endpoint, secret_key: secret)
+    HeedKit::Client.new(workspace_key: "fk_test", endpoint: endpoint, secret_key: secret)
   end
 
   def test_user_hash_for_matches_the_cross_sdk_vector
@@ -21,7 +21,7 @@ class ClientIdentityTest < Minitest::Test
   def test_user_hash_for_stringifies_and_requires_a_secret
     assert_equal VECTOR, client("http://unused").user_hash_for(:"user-42")
     err = assert_raises(HeedKit::Error) do
-      HeedKit::Client.new(project_key: "fk_test", endpoint: "http://x").user_hash_for("u")
+      HeedKit::Client.new(workspace_key: "fk_test", endpoint: "http://x").user_hash_for("u")
     end
     assert_match(/secret_key/, err.message)
   end
@@ -31,13 +31,14 @@ class ClientIdentityTest < Minitest::Test
       client(endpoint).identify(external_id: "user-42", email: "a@b.c")
     end
     body = JSON.parse(captured[:body])
+    assert_equal "fk_test", captured[:headers]["x-workspace-key"]
     assert_equal "user-42", body["external_id"]
     assert_equal VECTOR, body["user_hash"]
   end
 
   def test_identify_accepts_an_explicit_user_hash_without_a_secret
     captured = with_capturing_server do |endpoint|
-      HeedKit::Client.new(project_key: "fk_test", endpoint: endpoint)
+      HeedKit::Client.new(workspace_key: "fk_test", endpoint: endpoint)
                      .identify(external_id: "u-1", user_hash: "deadbeef")
     end
     assert_equal "deadbeef", JSON.parse(captured[:body])["user_hash"]

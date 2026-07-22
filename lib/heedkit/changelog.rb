@@ -12,13 +12,13 @@ module HeedKit
     def suggested? = !suggested_by.to_s.empty?
   end
 
-  # A project's public changelog: published entries, newest first.
+  # A workspace's public changelog: published entries, newest first.
   class Changelog
     CATEGORY_LABELS = {
       "new" => "New", "improved" => "Improved", "fixed" => "Fixed", "announcement" => "Announcement"
     }.freeze
 
-    attr_reader :project_name, :theme, :entries
+    attr_reader :workspace_name, :theme, :entries
 
     def self.from_payload(payload)
       entries = (payload["entries"] || []).map do |e|
@@ -28,7 +28,7 @@ module HeedKit
           published_at: parse_time(e["published_at"]), suggested_by: presence(e["suggested_by"])
         )
       end
-      new(project_name: payload["project_name"], theme: payload["theme"] || {}, entries: entries)
+      new(workspace_name: payload["workspace_name"], theme: payload["theme"] || {}, entries: entries)
     end
 
     def self.parse_time(value)
@@ -42,8 +42,8 @@ module HeedKit
       value unless value.to_s.strip.empty?
     end
 
-    def initialize(project_name:, theme:, entries:)
-      @project_name = project_name
+    def initialize(workspace_name:, theme:, entries:)
+      @workspace_name = workspace_name
       @theme = theme
       @entries = entries
     end

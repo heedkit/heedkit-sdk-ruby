@@ -27,7 +27,7 @@ require "heedkit"
 ENDPOINT    = ENV.fetch("HEEDKIT_ENDPOINT", "http://127.0.0.1:3000")
 # Get a real key from the Rails console Install page or db/seeds (the seeded
 # "heedkit"/"demo" workspace). Never commit a real key.
-PROJECT_KEY = ENV.fetch("HEEDKIT_PROJECT_KEY", "pk_REPLACE_ME")
+WORKSPACE_KEY = ENV.fetch("HEEDKIT_WORKSPACE_KEY", "pk_REPLACE_ME")
 
 def section(title)
   puts
@@ -36,11 +36,11 @@ end
 
 # Build a client straight from the constructor. (You could equally use
 # HeedKit.configure { |c| ... } + HeedKit.client — same Client object.)
-client = HeedKit::Client.new(project_key: PROJECT_KEY, endpoint: ENDPOINT)
+client = HeedKit::Client.new(workspace_key: WORKSPACE_KEY, endpoint: ENDPOINT)
 
 puts "HeedKit demo -> #{ENDPOINT}"
-if PROJECT_KEY == "pk_REPLACE_ME"
-  puts "WARNING: using placeholder project key. Set HEEDKIT_PROJECT_KEY to a real key."
+if WORKSPACE_KEY == "pk_REPLACE_ME"
+  puts "WARNING: using placeholder workspace key. Set HEEDKIT_WORKSPACE_KEY to a real key."
 end
 
 begin
@@ -49,7 +49,7 @@ begin
   # -------------------------------------------------------------------------
   section "Public roadmap"
   roadmap = client.roadmap
-  puts "Project: #{roadmap.project_name}  (#{roadmap.total} items, theme #{roadmap.primary_color})"
+  puts "Workspace: #{roadmap.workspace_name}  (#{roadmap.total} items, theme #{roadmap.primary_color})"
   roadmap.each_column do |_status, label, items|
     puts "  #{label}: #{items.empty? ? '(none)' : items.map { |i| "#{i.title} (#{i.vote_count})" }.join(', ')}"
   end
@@ -73,9 +73,9 @@ begin
     platform: "web"
   )
   end_user_id = user["end_user_id"]
-  project = user["project"] || {}
+  workspace = user["workspace"] || {}
   puts "end_user_id = #{end_user_id}"
-  puts "project: #{project['name']}  enabled_kinds=#{project['enabled_kinds'].inspect}"
+  puts "workspace: #{workspace['name']}  enabled_kinds=#{workspace['enabled_kinds'].inspect}"
 
   # -------------------------------------------------------------------------
   # 3) Fetch & display features (the feedback list / roadmap source).
@@ -125,6 +125,6 @@ rescue HeedKit::Error => e
   # All SDK methods wrap transport + non-2xx responses in HeedKit::Error.
   warn
   warn "HeedKit error: #{e.message}"
-  warn "Is the Rails server running (cd heedkit-rails && bin/dev) and is HEEDKIT_PROJECT_KEY a valid key?"
+  warn "Is the Rails server running (cd heedkit-rails && bin/dev) and is HEEDKIT_WORKSPACE_KEY a valid key?"
   exit 1
 end

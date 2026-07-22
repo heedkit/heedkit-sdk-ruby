@@ -7,9 +7,9 @@ require "openssl"
 
 module HeedKit
   # Server-side client for the HeedKit API. Talks to the public roadmap endpoint
-  # and the end-user SDK endpoints (X-Project-Key auth).
+  # and the end-user SDK endpoints (X-Workspace-Key auth).
   #
-  # Identity: this SDK runs where the project SECRET may live, so it can sign
+  # Identity: this SDK runs where the workspace secret may live, so it can sign
   # identities itself — configure `secret_key` and #identify computes the required
   # user_hash automatically (or expose #user_hash_for to your frontend widget).
   # Authenticated calls (submit/vote/comment) take the `identity` token #identify
@@ -17,13 +17,13 @@ module HeedKit
   class Client
     DEFAULT_TIMEOUT = 5
 
-    attr_reader :project_key, :endpoint
+    attr_reader :workspace_key, :endpoint
 
-    def initialize(project_key:, endpoint:, secret_key: nil, timeout: DEFAULT_TIMEOUT)
-      raise ArgumentError, "project_key is required" if project_key.to_s.empty?
+    def initialize(workspace_key:, endpoint:, secret_key: nil, timeout: DEFAULT_TIMEOUT)
+      raise ArgumentError, "workspace_key is required" if workspace_key.to_s.empty?
       raise ArgumentError, "endpoint is required" if endpoint.to_s.empty?
 
-      @project_key = project_key
+      @workspace_key = workspace_key
       @endpoint = endpoint.to_s.chomp("/")
       @secret_key = secret_key
       @timeout = timeout
@@ -41,16 +41,16 @@ module HeedKit
 
     # GET the public roadmap. Returns a HeedKit::Roadmap.
     def roadmap
-      Roadmap.from_payload(get("/public/projects/#{project_key}/roadmap"))
+      Roadmap.from_payload(get("/public/workspaces/#{workspace_key}/roadmap"))
     end
 
     # GET the public changelog. Returns a HeedKit::Changelog.
     def changelog
-      Changelog.from_payload(get("/public/projects/#{project_key}/changelog"))
+      Changelog.from_payload(get("/public/workspaces/#{workspace_key}/changelog"))
     end
 
     # POST /sdk/init — identify (find-or-create) an end-user. Returns the parsed body
-    # ({ "end_user_id" => ..., "identity" => "<replay token>", "project" => {...} });
+    # ({ "end_user_id" => ..., "identity" => "<replay token>", "workspace" => {...} });
     # pass that "identity" to submit/vote/comment. With an external_id, user_hash is
     # computed from the configured secret_key when not given explicitly.
     def identify(external_id: nil, user_hash: nil, email: nil, name: nil, avatar_url: nil, platform: nil)
@@ -90,10 +90,10 @@ module HeedKit
       post(path, body: body.compact, headers: key_header(identity))
     end
 
-    # Project key + (when present) the signed identity replay token. The caller is
+    # Workspace key + (when present) the signed identity replay token. The caller is
     # identified by this header, never by body params.
     def key_header(identity = nil)
-      h = { "X-Project-Key" => project_key }
+      h = { "X-Workspace-Key" => workspace_key }
       h["X-HeedKit-Identity"] = identity if identity
       h
     end

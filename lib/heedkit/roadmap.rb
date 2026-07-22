@@ -4,13 +4,13 @@ module HeedKit
   # A single roadmap item.
   RoadmapItem = Struct.new(:id, :title, :description, :vote_count, :tag, keyword_init: true)
 
-  # The public roadmap for a project: ordered status columns, each a list of items.
+  # The public roadmap for a workspace: ordered status columns, each a list of items.
   class Roadmap
     # Column order matches the product (Planned → In progress → Shipped).
     STATUSES = %w[planned in_progress shipped].freeze
     LABELS = { "planned" => "Planned", "in_progress" => "In progress", "shipped" => "Shipped" }.freeze
 
-    attr_reader :project_name, :theme, :columns
+    attr_reader :workspace_name, :theme, :columns
 
     def self.from_payload(payload)
       cols = (payload["columns"] || {}).transform_values do |items|
@@ -19,11 +19,11 @@ module HeedKit
                           vote_count: i["vote_count"], tag: i["tag"])
         end
       end
-      new(project_name: payload["project_name"], theme: payload["theme"] || {}, columns: cols)
+      new(workspace_name: payload["workspace_name"], theme: payload["theme"] || {}, columns: cols)
     end
 
-    def initialize(project_name:, theme:, columns:)
-      @project_name = project_name
+    def initialize(workspace_name:, theme:, columns:)
+      @workspace_name = workspace_name
       @theme = theme
       @columns = columns
     end

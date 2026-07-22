@@ -6,7 +6,7 @@ locally via `path: ".."`, not the published gem).
 
 It walks through:
 
-1. Configure the client (project key + Rails endpoint)
+1. Configure the client (workspace key + Rails endpoint)
 2. Fetch the public **roadmap** and **changelog** (typed objects)
 3. **Identify** an end-user — `POST /sdk/init`
 4. **List** features — `GET /sdk/features`
@@ -24,7 +24,7 @@ It walks through:
   bin/dev            # serves on port 3000
   ```
 
-- A **project key** (public key, `pk_...`). Get one from the Rails console
+- A **workspace key** (public key, `fk_...`). Get one from the Rails console
   Install page, or from `db/seeds` (the seeded `heedkit` / `demo` workspace).
   Never hardcode a real key into source.
 
@@ -34,20 +34,20 @@ From this `Example/` directory:
 
 ```sh
 bundle install
-HEEDKIT_PROJECT_KEY=pk_your_real_key bundle exec ruby demo.rb
+HEEDKIT_WORKSPACE_KEY=pk_your_real_key bundle exec ruby demo.rb
 ```
 
 `HEEDKIT_ENDPOINT` is optional and defaults to `http://127.0.0.1:3000`.
 
 ```sh
-HEEDKIT_PROJECT_KEY=pk_... \
+HEEDKIT_WORKSPACE_KEY=pk_... \
 HEEDKIT_ENDPOINT=http://127.0.0.1:3000 \
 bundle exec ruby demo.rb
 ```
 
 ## Endpoint / host notes
 
-Auth is the header `X-Project-Key: <publicKey>` on every request — the SDK adds
+Auth is the header `X-Workspace-Key: <publicKey>` on every request — the SDK adds
 it for you. Pick the endpoint host for your environment:
 
 | Environment                    | Endpoint                          |
@@ -67,7 +67,7 @@ Every step uses a real method on `HeedKit::Client`
 
 | Step      | SDK method                                  | Rails endpoint                     |
 | --------- | ------------------------------------------- | ---------------------------------- |
-| roadmap   | `client.roadmap`                            | `GET /public/projects/:key/roadmap`|
+| roadmap   | `client.roadmap`                            | `GET /public/workspaces/:key/roadmap`|
 | changelog | `client.changelog`                          | `GET /public/.../changelog`        |
 | identify  | `client.identify(...)`                      | `POST /sdk/init`                   |
 | list      | `client.features(end_user_id:, sort:)`      | `GET /sdk/features`                |

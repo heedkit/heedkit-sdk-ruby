@@ -1,6 +1,6 @@
 # heedkit (Ruby / Rails SDK)
 
-Server-side SDK for [HeedKit](https://heedkit.com). Fetch a project's **public
+Server-side SDK for [HeedKit](https://heedkit.com). Fetch a workspace's **public
 roadmap** and drive the **end-user feedback API** (identify / list / submit / vote /
 comment) from any Ruby or Rails app.
 
@@ -12,7 +12,7 @@ gem "heedkit"
 
 ```ruby
 HeedKit.configure do |c|
-  c.project_key = ENV["HEEDKIT_PROJECT_KEY"]   # "fk_..."
+  c.workspace_key = ENV["HEEDKIT_WORKSPACE_KEY"]   # "fk_..."
   c.endpoint    = "https://heedkit.com"         # your HeedKit base URL
   c.secret_key  = ENV["HEEDKIT_SERVER_SECRET"] # "fk_secret_..." — lets identify() sign users
 end
@@ -22,7 +22,7 @@ end
 
 ```ruby
 roadmap = HeedKit.roadmap            # => HeedKit::Roadmap
-roadmap.project_name                    # "Acme Feedback"
+roadmap.workspace_name                    # "Acme Feedback"
 roadmap.each_column do |status, label, items|
   puts "#{label}: #{items.map(&:title).join(', ')}"
 end
@@ -80,8 +80,8 @@ render json: {
 }
 ```
 
-`identify` / `submit` / `features` / `vote` / `comment` authenticate with the project key
-via the `X-Project-Key` header; `roadmap` reads the public endpoint. All methods raise
+`identify` / `submit` / `features` / `vote` / `comment` authenticate with the workspace key
+via the `X-Workspace-Key` header; `roadmap` reads the public endpoint. All methods raise
 `HeedKit::Error` on a non-2xx response.
 
 ## License

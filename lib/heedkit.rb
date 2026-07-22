@@ -5,11 +5,11 @@ require "heedkit/roadmap"
 require "heedkit/changelog"
 require "heedkit/client"
 
-# Ruby / Rails SDK for HeedKit — fetch a project's public roadmap and drive the
+# Ruby / Rails SDK for HeedKit — fetch a workspace's public roadmap and drive the
 # end-user feedback API (identify / list / submit / vote / comment) from your server.
 #
 #   HeedKit.configure do |c|
-#     c.project_key = "fk_..."
+#     c.workspace_key = "fk_..."
 #     c.endpoint    = "https://heedkit.com"        # your HeedKit ORIGIN (no /sdk suffix)
 #   end
 #
@@ -19,10 +19,10 @@ module HeedKit
   class Error < StandardError; end
 
   class Configuration
-    # secret_key is the project's SERVER secret (fk_secret_…) — set it so
+    # secret_key is the workspace's SERVER secret (fk_secret_…) — set it so
     # Client#identify can sign external ids (user_hash). Keep it out of anything
     # that reaches a browser or app binary.
-    attr_accessor :project_key, :endpoint, :secret_key, :timeout
+    attr_accessor :workspace_key, :endpoint, :secret_key, :timeout
 
     def initialize
       @endpoint = "https://api.heedkit.com"
@@ -41,7 +41,7 @@ module HeedKit
 
     # A client built from the global configuration.
     def client
-      Client.new(project_key: configuration.project_key, endpoint: configuration.endpoint,
+      Client.new(workspace_key: configuration.workspace_key, endpoint: configuration.endpoint,
                  secret_key: configuration.secret_key, timeout: configuration.timeout)
     end
 
