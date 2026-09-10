@@ -126,13 +126,19 @@ module HeedKit
 
       res = http.request(req)
       unless res.code.to_i.between?(200, 299)
-        raise Error, "HeedKit API #{res.code} for #{uri.path}: #{res.body}"
+        error_body = begin
+          JSON.parse(res.body)
+        rescue JSON::ParserError
+          nil
+        end
+        raise Error.new("HeedKit API #{res.code} for #{uri.path}: #{res.body}",
+                        status: res.code.to_i, code: error_body.is_a?(Hash) ? error_body["error"] : nil)
       end
 
       res.body.to_s.empty? ? {} : JSON.parse(res.body)
     rescue JSON::ParserError => e
       raise Error, "Invalid JSON from HeedKit API: #{e.message}"
-    rescue SocketError, SystemCallError, IOError, Timeout::Error => e
+    rescue SocketError, SystemCallError, IOError, Timeout::Error, OpenSSL::SSL::SSLError => e
       # Wrap transport failures (connection refused, DNS, timeouts) in our own error
       # type so callers only need to rescue HeedKit::Error.
       raise Error, "HeedKit request to #{uri} failed: #{e.message}"

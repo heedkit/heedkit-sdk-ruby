@@ -6,9 +6,9 @@ module HeedKit
 
   # The public roadmap for a workspace: ordered status columns, each a list of items.
   class Roadmap
-    # Column order matches the product (Planned → In progress → Shipped).
-    STATUSES = %w[planned in_progress shipped].freeze
-    LABELS = { "planned" => "Planned", "in_progress" => "In progress", "shipped" => "Shipped" }.freeze
+    # Column order matches the public roadmap, including items still in Backlog.
+    STATUSES = %w[open planned in_progress shipped].freeze
+    LABELS = { "open" => "Backlog", "planned" => "Planned", "in_progress" => "In progress", "shipped" => "Shipped" }.freeze
 
     attr_reader :workspace_name, :theme, :columns
 
