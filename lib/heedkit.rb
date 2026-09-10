@@ -16,7 +16,15 @@ require "heedkit/client"
 #   HeedKit.roadmap            # => HeedKit::Roadmap
 #   HeedKit.client.identify(external_id: "u-1")
 module HeedKit
-  class Error < StandardError; end
+  class Error < StandardError
+    attr_reader :status, :code
+
+    def initialize(message, status: nil, code: nil)
+      super(message)
+      @status = status
+      @code = code
+    end
+  end
 
   class Configuration
     # secret_key is the workspace's SERVER secret (fk_secret_…) — set it so
@@ -25,7 +33,7 @@ module HeedKit
     attr_accessor :workspace_key, :endpoint, :secret_key, :timeout
 
     def initialize
-      @endpoint = "https://api.heedkit.com"
+      @endpoint = "https://heedkit.com"
       @timeout = 5
     end
   end

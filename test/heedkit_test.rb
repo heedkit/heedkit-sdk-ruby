@@ -16,11 +16,32 @@ class HeedKitTest < Minitest::Test
     assert_equal 1, roadmap.total
 
     columns = roadmap.each_column.to_a
-    assert_equal %w[planned in_progress shipped], columns.map(&:first)
-    assert_equal "Planned", columns.first[1]
-    item = columns.first[2].first
+    assert_equal %w[open planned in_progress shipped], columns.map(&:first)
+    assert_equal "Backlog", columns.first[1]
+    assert_equal "Planned", columns[1][1]
+    item = columns[1][2].first
     assert_equal "Dark mode", item.title
     assert_equal 3, item.vote_count
+  end
+
+  def test_backlog_items_are_rendered
+    roadmap = HeedKit::Roadmap.from_payload("columns" => { "open" => [ { "id" => 1, "title" => "Idea" } ] })
+    assert_equal ["Idea"], roadmap.each_column.flat_map { |_, _, items| items.map(&:title) }
+    assert_equal 1, roadmap.total
+  end
+
+  def test_default_endpoint_matches_the_apex_api
+    assert_equal "https://heedkit.com", HeedKit::Configuration.new.endpoint
+  end
+
+  def test_expired_identity_error_is_distinguishable_for_bounded_reauthentication
+    with_stub_server(status: "401 Unauthorized", body: '{"error":"invalid_identity"}') do |endpoint|
+      error = assert_raises(HeedKit::Error) do
+        HeedKit::Client.new(workspace_key: "fk_test", endpoint: endpoint).vote("42", identity: "old")
+      end
+      assert_equal 401, error.status
+      assert_equal "invalid_identity", error.code
+    end
   end
 
   def test_changelog_from_payload
